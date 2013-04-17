@@ -104,8 +104,7 @@ SurfaceFlinger::SurfaceFlinger()
         mLastSwapBufferTime(0),
         mDebugInTransaction(0),
         mLastTransactionTime(0),
-        mBootFinished(false),
-        mUseDithering(0)
+        mBootFinished(false)
 {
     ALOGI("SurfaceFlinger is starting");
 
@@ -123,13 +122,8 @@ SurfaceFlinger::SurfaceFlinger()
             mDebugDDMS = 0;
         }
     }
-
-    property_get("persist.sys.use_dithering", value, "1");
-    mUseDithering = atoi(value);
-
     ALOGI_IF(mDebugRegion, "showupdates enabled");
     ALOGI_IF(mDebugDDMS, "DDMS debugging enabled");
-    ALOGI_IF(mUseDithering, "use dithering");
 
 #ifdef SAMSUNG_HDMI_SUPPORT
     ALOGD(">>> Run service");
@@ -435,11 +429,7 @@ void SurfaceFlinger::initializeGL(EGLDisplay display) {
     glPixelStorei(GL_PACK_ALIGNMENT, 4);
     glEnableClientState(GL_VERTEX_ARRAY);
     glShadeModel(GL_FLAT);
-    if (mUseDithering == 2) {
-        glEnable(GL_DITHER);
-    } else {
-        glDisable(GL_DITHER);
-    }
+    glDisable(GL_DITHER);
     glDisable(GL_CULL_FACE);
 
     struct pack565 {
@@ -477,9 +467,6 @@ void SurfaceFlinger::initializeGL(EGLDisplay display) {
     ALOGI("extensions: %s", extensions.getExtension());
     ALOGI("GL_MAX_TEXTURE_SIZE = %d", mMaxTextureSize);
     ALOGI("GL_MAX_VIEWPORT_DIMS = %d x %d", mMaxViewportDims[0], mMaxViewportDims[1]);
-
-    // XXX Assume bit depth for red is equal to minimum depth of all colors
-    mMinColorDepth = r;
 }
 
 status_t SurfaceFlinger::readyToRun()
@@ -575,10 +562,6 @@ void SurfaceFlinger::startBootAnim() {
 
 uint32_t SurfaceFlinger::getMaxTextureSize() const {
     return mMaxTextureSize;
-}
-
-uint32_t SurfaceFlinger::getMinColorDepth() const {
-    return mMinColorDepth;
 }
 
 uint32_t SurfaceFlinger::getMaxViewportDims() const {
